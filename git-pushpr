@@ -1,0 +1,21 @@
+# Specific to my workplace's push responses. As-is, probably not too useful to anyone else.
+
+
+# Simple version
+#open $(git push 2>&1 | awk 'NR==3 {print $2}')
+
+# Improvement: ask if I want to open PR
+
+response=$( { git push; } 2>&1 )
+echo "$response"
+
+if [ "$response" == "Everything up-to-date" ]; then
+	exit 0
+fi
+
+action=$(echo "$response" | awk 'NR==2 {print $2}')
+url=$(echo "$response" | awk 'NR==3 {print $2}')
+
+if [ "$action" == "Create" ]; then
+	open "$url"
+fi # elif [ "$action" == "[the other one]" ]; then

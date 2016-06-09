@@ -1,0 +1,36 @@
+#!/usr/bin/env bash
+
+MAX_COMMITS_TO_SHOW=10
+FORMAT_STRING="%C(auto)  %h %Cgreen%f"
+
+response=$( { git -c color.status=always status; } 2>&1 )
+state=$(echo "$response" | awk 'NR==2 {print $4}')
+
+function output () {
+	if [ "$number_of_commits" -gt "$MAX_COMMITS_TO_SHOW" ]; then
+		number_of_commits="$MAX_COMMITS_TO_SHOW" 
+	fi
+
+	echo "$response" | awk 'NR<=2 {print}'
+	
+	if [ -z "$branch" ]; then
+		git log --format="$FORMAT_STRING" -n"$number_of_commits"
+	else
+		git log "${branch//\'}" --format="$FORMAT_STRING" -n"$number_of_commits"
+
+	fi
+	echo "$response" | awk 'NR>2 {print}'
+}
+
+if [ "$state" == "behind" ]; then
+	number_of_commits=$(echo "$response" | awk 'NR==2 {print $7}')
+	branch=$(echo "$response" | awk 'NR==2 {print $5}')
+
+	output
+elif [ "$state" == "ahead" ]; then
+	number_of_commits=$(echo "$response" | awk 'NR==2 {print $8}')
+
+	output
+else 
+	echo "$response"
+fi
