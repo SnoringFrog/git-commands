@@ -1,3 +1,4 @@
+#!/usr/bin/env bash
 # Specific to my workplace's push responses. As-is, probably not too useful to anyone else.
 
 
@@ -17,5 +18,20 @@ action=$(echo "$response" | awk 'NR==2 {print $2}')
 url=$(echo "$response" | awk 'NR==3 {print $2}')
 
 if [ "$action" == "Create" ]; then
-	open "$url"
-fi # elif [ "$action" == "[the other one]" ]; then
+	cygstart "$url"
+elif [ "$action" == "View" ]; then
+	# if chromix is installed and the PR is already open, focus/refresh it
+	# otherwise open it in a new tab
+
+	if type chromix >/dev/null 2>&1 && chromix; then
+		pr_tab=$(chromix with "${url/\?*}" list)
+	fi
+
+	sleep 4
+	if [ -n "$pr_tab" ]; then
+		chromix with "${url/\?*}" focus >/dev/null
+		chromix with "${url/\?*}" reload >/dev/null
+	else
+		cygstart "$url"
+	fi
+fi 
