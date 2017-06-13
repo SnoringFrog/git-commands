@@ -7,8 +7,7 @@
 
 # Improvement: ask if I want to open PR
 
-response=$( { git push; } 2>&1 )
-echo "$response"
+response=$( { git push $@ 2>&1; } | tee /dev/tty )
 
 if [ "$response" == "Everything up-to-date" ]; then
 	exit 0
